@@ -1,45 +1,62 @@
-from pydantic_settings import BaseSettings
+import boto3
+import json
 import logging
-from pathlib import Path
-import os
-
-# Get the current file path
-current_file_path = Path(__file__).resolve()
-from decouple import config
-
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """
-    Configuration settings for the Table API.
+    Configuration settings for the ML Lifecycle Management System.
 
-    The settings are loaded from environment variables defined in a `.env` file.
-    This class uses `pydantic.BaseSettings`, which automatically reads the environment
-    variables, providing a simple and clean way to manage configuration.
-
-    Attributes:
-        PROJECT_NAME (str): The name of the project, default is "Table API".
-        PROJECT_VERSION (str): The version of the project, default is "1.0.0".
-        OPENAI_API_KEY (str): The API key for accessing OpenAI services.
-        QDRANT_HOST (str): The hostname for the Qdrant vector database.
-        QDRANT_PORT (int): The port number for the Qdrant vector database.
-        STORAGE_TYPE (str): The type of storage being used, e.g., local or S3.
-        LOCAL_STORAGE_PATH (str): The path for storing files locally, default is "./local_storage".
-        S3_BUCKET_NAME (str): The name of the S3 bucket to be used for storage, optional.
-        AWS_ACCESS_KEY_ID (str): The AWS access key ID, required if using S3.
-        AWS_SECRET_ACCESS_KEY (str): The AWS secret access key, required if using S3.
+    The settings are loaded dynamically from AWS Secrets Manager.
     """
 
+    def get_secret(self):
+        """
+        Fetch the secret from AWS Secrets Manager.
+        """
+        secret_name = "ml-lifecycle-secrets"
+        region_name = "eu-central-1"  # Replace with your region
 
-    # AWS Cognito Boto client keys
-    Access_Key_ID_Reviewer: str = config("Access_Key_ID_Reviewer")
-    Secret_Access_Key_Reviewer: str = config("Secret_Access_Key_Reviewer")
-    AWS_DEFAULT_REGION='eu-central-1'
-    # Set up logging configuration
-    logging.basicConfig(
-        level=logging.INFO,  # Change to DEBUG for more detailed logs
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+        # Create a Secrets Manager client
+        session = boto3.session.Session()
+        client = session.client(
+            service_name="secretsmanager",
+            region_name=region_name,
+        )
+
+        try:
+            get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+        except Exception as e:
+            logging.error(f"Failed to retrieve secret: {e}")
+            raise e
+
+        # Decrypts secret using the associated KMS key.
+        secret = get_secret_value_response["SecretString"]
+        return json.loads(secret)
+
+    def __init__(self):
+        """
+        Initialize settings by loading the secrets.
+        """
+        secrets = self.get_secret()
+
+        # Set attributes from secrets
+        self.AWS_ACCESS_KEY_ID = secrets["AWS_ACCESS_KEY_ID"]
+        self.AWS_SECRET_ACCESS_KEY = secrets["AWS_SECRET_ACCESS_KEY"]
+        self.AWS_DEFAULT_REGION = secrets.get("AWS_DEFAULT_REGION", "eu-central-1")
+        self.S3_BUCKET_NAME = secrets["S3_BUCKET_NAME"]
+        self.MLFLOW_TRACKING_URI = "http://mlflow-server:5000"
+
+        # Set up logging configuration
+        logging.basicConfig(
+            level=logging.INFO,  # Change to DEBUG for more detailed logs
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
 
 
 # Instantiate the settings
 settings = Settings()
+
+# You can now access the settings like this:
+# print(settings.AWS_ACCESS_KEY_ID)
+# print(settings.S3_BUCKET_NAME)

@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ml-network
+
+  mlflow-server:
+    build:
+      context: ./mlflow
+    image: mlflow-server:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://localhost:5000
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+    volumes:
+      - mlflow_db:/mlflow_db
+    networks:
+      - ml-network
+
+  airflow-webserver:
+    build:
+      context: ./airflow
+    image: airflow-webserver:latest
+    depends_on:
+      - postgres
+      - mlflow-server
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./training:/home/airflow/ml-lifecycle-system/training
+      - ./airflow/dags:/opt/airflow/dags
+    networks:
+      - ml-network
+
+  airflow-scheduler:
+    build:
+      context: ./airflow
+    image: airflow-scheduler:latest
+    depends_on:
+      - airflow-webserver
+      - mlflow-server
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+    volumes:
+      - ./training:/home/airflow/ml-lifecycle-system/training
+      - ./airflow/dags:/opt/airflow/dags
+    networks:
+      - ml-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - ml-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # Change as needed
+    networks:
+      - ml-network
+
+  mlflow-exporter:
+    build:
+      context: ./monitoring/exporter
+    image: mlflow-exporter:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+    depends_on:
+      - mlflow-server
+    networks:
+      - ml-network
+
+networks:
+  ml-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mlflow_db:
+  grafana_data:
