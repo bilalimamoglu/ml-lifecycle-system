@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.xml
+*.iml
+*.pyo
+*.pyd
+*.env
+*.venv
+*.idea
+env/
+venv/
+ENV/
+# Docker
+*.log
+*.pid
+.env/
+
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
