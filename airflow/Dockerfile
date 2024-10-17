@@ -13,11 +13,14 @@ RUN apt-get update && \
 # Grant the 'airflow' user access to the 'docker' group
 RUN usermod -aG docker airflow
 
+# Check if the 'airflow' group exists, if not, create it
+RUN getent group airflow || groupadd airflow
+
+# Ensure the Airflow user owns the home directory
+RUN chown -R airflow:airflow /home/airflow || true
+
 # Switch back to the 'airflow' user
 USER airflow
-
-# Create a directory for Python packages if it doesn't exist
-RUN mkdir -p /home/airflow/.local/bin
 
 # Copy the requirements.txt to the home directory
 COPY requirements.txt /home/airflow/requirements.txt

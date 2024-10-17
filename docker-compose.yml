@@ -23,6 +23,7 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - /var/run/docker.sock:/var/run/docker.sock
+      - $HOME/.aws:/home/airflow/.aws:ro  # Mount the .aws directory into the Airflow container
     ports:
       - "8080:8080"
     command: webserver
@@ -39,7 +40,9 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - /var/run/docker.sock:/var/run/docker.sock
+      - $HOME/.aws:/home/airflow/.aws:ro  # Mount the .aws directory into the Airflow container
     command: scheduler
+
 
   mlflow-server:
     image: mlflow-server

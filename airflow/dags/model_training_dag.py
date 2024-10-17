@@ -30,10 +30,12 @@ with DAG(
         auto_remove=True,
         command="python model_training.py",
         docker_url="unix://var/run/docker.sock",  # Default Docker URL
-        network="ml-lifecycle_system_default",  # Specify the docker-compose network
+        network_mode="ml-lifecycle-system_default",  # Specify the correct network
         environment={
             'MLFLOW_TRACKING_URI': 'http://mlflow-server:5000',
-            'AWS_ACCESS_KEY_ID': os.getenv('AWS_ACCESS_KEY_ID'),
-            'AWS_SECRET_ACCESS_KEY': os.getenv('AWS_SECRET_ACCESS_KEY'),
         },
+        volumes=[
+            '/home/airflow/.aws:/root/.aws:ro',  # Mount the .aws directory into the container
+        ],
+        mount_tmp_dir=False,  # Optional: Prevent mounting /tmp
     )
