@@ -30,7 +30,7 @@ with DAG(
         auto_remove=True,
         command="python model_training.py",
         docker_url="unix://var/run/docker.sock",  # Default Docker URL
-        network_mode="host",  # Use host network to allow container to access Mlflow server
+        network="ml-lifecycle_system_default",  # Specify the docker-compose network
         environment={
             'MLFLOW_TRACKING_URI': 'http://mlflow-server:5000',
             'AWS_ACCESS_KEY_ID': os.getenv('AWS_ACCESS_KEY_ID'),

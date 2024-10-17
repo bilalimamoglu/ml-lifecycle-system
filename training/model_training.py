@@ -11,12 +11,11 @@ from sklearn.preprocessing import StandardScaler
 from mlflow.models import infer_signature
 from pathlib import Path
 
-# Set Mlflow Tracking URI
-mlflow.set_tracking_uri("http://localhost:5000")  # Ensure it points to the correct port
+# Set Mlflow Tracking URI to use the Docker service name
+mlflow.set_tracking_uri("http://mlflow-server:5000")  # Changed from localhost to mlflow-server
 
 # Define the experiment
 mlflow.set_experiment("RandomForest_Iris")
-
 
 def train_random_forest(df: pd.DataFrame, target_column: str, hyperparameters: dict):
     """
