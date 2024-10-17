@@ -1,0 +1,59 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    build: ./airflow
+    restart: always
+    depends_on:
+      - postgres
+      - mlflow-server
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+    volumes:
+      - ./training:/home/airflow/ml-lifecycle-system/training
+      - ./airflow/dags:/opt/airflow/dags
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    build: ./airflow
+    restart: always
+    depends_on:
+      - airflow-webserver
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    volumes:
+      - ./training:/home/airflow/ml-lifecycle-system/training
+      - ./airflow/dags:/opt/airflow/dags
+    command: scheduler
+
+  mlflow-server:
+    image: mlflow-server
+    build:
+      context: ./mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_S3_ENDPOINT_URL=https://s3.amazonaws.com
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=s3://mlflow-artifacts-bilalimg/
+    volumes:
+      - mlflow_db:/mlflow_db
+
+volumes:
+  postgres_data:
+  mlflow_db:
