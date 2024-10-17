@@ -1,21 +1,55 @@
+import os
+import boto3
+import logging
+
+# Retrieve and log AWS credentials
+session = boto3.Session()
+credentials = session.get_credentials()
+
+# Print out the AWS credentials to ensure they are correct
+current_credentials = credentials.get_frozen_credentials()
+print(f"AWS_ACCESS_KEY_ID={current_credentials.access_key}")
+print(f"AWS_SECRET_ACCESS_KEY={current_credentials.secret_key}")
+
+
+import boto3
+
+s3 = boto3.client('s3')
+response = s3.list_buckets()
+
+print("S3 Buckets:")
+for bucket in response['Buckets']:
+    print(f"  {bucket['Name']}")
+
+# ==========================
+# 2. Import Mlflow and Other Libraries
+# ==========================
+
 import mlflow
 import mlflow.sklearn
-import os
 import pandas as pd
-import random
-from datetime import datetime
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from mlflow.models import infer_signature
 from pathlib import Path
+from datetime import datetime
+import random
 
-# Set Mlflow Tracking URI to use the Docker service name
-mlflow.set_tracking_uri("http://mlflow-server:5000")  # Changed from localhost to mlflow-server
+# ==========================
+# 3. Configure Mlflow
+# ==========================
+
+# Set Mlflow Tracking URI from environment variable
+mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000"))
 
 # Define the experiment
 mlflow.set_experiment("RandomForest_Iris")
+
+# ==========================
+# 4. Define Training Function
+# ==========================
 
 def train_random_forest(df: pd.DataFrame, target_column: str, hyperparameters: dict):
     """
@@ -42,6 +76,9 @@ def train_random_forest(df: pd.DataFrame, target_column: str, hyperparameters: d
 
     return model, accuracy, X_test
 
+# ==========================
+# 5. Main Execution
+# ==========================
 
 if __name__ == '__main__':
     # Load Iris dataset from /data folder
@@ -62,7 +99,7 @@ if __name__ == '__main__':
         model, accuracy, X_test = train_random_forest(df, 'variety', hyperparameters)
         print("The accuracy of the model is:", accuracy)
 
-        # Log parameters, metrics, and model
+        # Log parameters and metrics
         mlflow.log_params(hyperparameters)
         mlflow.log_metric("accuracy", accuracy)
 

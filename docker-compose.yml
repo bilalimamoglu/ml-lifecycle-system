@@ -21,7 +21,6 @@ services:
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
     volumes:
-      - /Users/bilalimamoglu/repos/ml-lifecycle-system/training:/app
       - ./airflow/dags:/opt/airflow/dags
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
@@ -38,7 +37,6 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
     volumes:
-      - /Users/bilalimamoglu/repos/ml-lifecycle-system/training:/app
       - ./airflow/dags:/opt/airflow/dags
       - /var/run/docker.sock:/var/run/docker.sock
     command: scheduler
@@ -65,14 +63,11 @@ services:
     image: ml-lifecycle-training
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow-server:5000
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-    volumes:
-      - /Users/bilalimamoglu/repos/ml-lifecycle-system/training:/app
     depends_on:
       - mlflow-server
-    # Remove the command override to use CMD from Dockerfile
-    # command: ./run.sh
+    volumes:
+      - $HOME/.aws:/root/.aws:ro  # Mount the .aws directory to /root/.aws
+
 
 volumes:
   postgres_data:

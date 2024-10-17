@@ -1,7 +1,7 @@
 # Use the official Python image as the base
 FROM python:3.11.9-slim
 
-# Install Git
+# Install Git to eliminate Git-related warnings (optional but recommended)
 RUN apt-get update && \
     apt-get install -y git && \
     rm -rf /var/lib/apt/lists/*
