@@ -1,0 +1,13 @@
+# airflow/values.yaml
+executor: LocalExecutor
+dags:
+  persistence:
+    enabled: true
+    size: 1Gi
+airflow:
+  config:
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+web:
+  service:
+    type: NodePort

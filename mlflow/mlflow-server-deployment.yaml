@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-server
+  namespace: ml-lifecycle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow-server
+  template:
+    metadata:
+      labels:
+        app: mlflow-server
+    spec:
+      containers:
+        - name: mlflow-server
+          image: mlflow-server:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: https://s3.amazonaws.com
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: MLFLOW_BACKEND_STORE_URI
+              value: sqlite:///mlflow.db
+            - name: MLFLOW_DEFAULT_ARTIFACT_ROOT
+              value: s3://mlflow-artifacts-bilalimg/
+          volumeMounts:
+            - name: mlflow-data
+              mountPath: /mlflow_db
+      volumes:
+        - name: mlflow-data
+          emptyDir: {}
