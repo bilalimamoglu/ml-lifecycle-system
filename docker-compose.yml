@@ -9,8 +9,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  airflow-webserver:
-    build: ./airflow
+  airflow:
+    build:
+      context: ./airflow
+      args:
+        DOCKER_GID: ${DOCKER_GID}  # Pass the Docker GID from .env
     restart: always
     depends_on:
       - postgres
@@ -18,31 +21,16 @@ services:
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      # Pass AWS credentials if needed
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $HOME/.aws:/home/airflow/.aws:ro  # Mount the .aws directory into the Airflow container
+      - /var/run/docker.sock:/var/run/docker.sock  # Mount Docker socket
+      - $HOME/.aws:/home/airflow/.aws:ro  # Mount AWS credentials
     ports:
       - "8080:8080"
-    command: webserver
-
-  airflow-scheduler:
-    build: ./airflow
-    restart: always
-    depends_on:
-      - airflow-webserver
-    environment:
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
-    volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - /var/run/docker.sock:/var/run/docker.sock
-      - $HOME/.aws:/home/airflow/.aws:ro  # Mount the .aws directory into the Airflow container
-    command: scheduler
-
 
   mlflow-server:
     image: mlflow-server
@@ -62,7 +50,6 @@ services:
   ml-lifecycle-training:
     build:
       context: ./training
-      dockerfile: Dockerfile
     image: ml-lifecycle-training
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow-server:5000
@@ -70,7 +57,6 @@ services:
       - mlflow-server
     volumes:
       - $HOME/.aws:/root/.aws:ro  # Mount the .aws directory to /root/.aws
-
 
 volumes:
   postgres_data:

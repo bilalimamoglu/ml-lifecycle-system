@@ -10,14 +10,21 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Grant the 'airflow' user access to the 'docker' group
-RUN usermod -aG docker airflow
+# Accept the Docker group GID as a build argument, default to 999 if not provided
+ARG DOCKER_GID=999
 
-# Check if the 'airflow' group exists, if not, create it
-RUN getent group airflow || groupadd airflow
+# Create the docker group with the specified GID
+RUN groupadd -g ${DOCKER_GID} docker || true
+
+# Add the 'airflow' user to the docker group
+RUN usermod -aG docker airflow
 
 # Ensure the Airflow user owns the home directory
 RUN chown -R airflow:airflow /home/airflow || true
+
+# Copy the entrypoint script and give execution permissions
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Switch back to the 'airflow' user
 USER airflow
@@ -25,7 +32,7 @@ USER airflow
 # Copy the requirements.txt to the home directory
 COPY requirements.txt /home/airflow/requirements.txt
 
-# Install Python dependencies into the virtual environment without '--user'
+# Install Python dependencies
 RUN pip install --no-cache-dir -r /home/airflow/requirements.txt
 
 # Add the local bin to PATH
@@ -33,3 +40,6 @@ ENV PATH=/home/airflow/.local/bin:$PATH
 
 # Copy DAGs
 COPY dags/ /opt/airflow/dags/
+
+# Set the entrypoint script
+ENTRYPOINT ["/entrypoint.sh"]
