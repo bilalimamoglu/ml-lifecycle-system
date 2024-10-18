@@ -6,12 +6,12 @@ airflow db upgrade
 
 # Create an admin user if it doesn't already exist
 airflow users create \
-    --username airflow \
-    --password airflow \
-    --firstname Airflow \
-    --lastname Admin \
+    --username myuser \
+    --password mypassword \
+    --firstname Firstname \
+    --lastname Lastname \
     --role Admin \
-    --email admin@example.com \
+    --email example@example.com \
     || echo "Admin user already exists."
 
 # Start the Airflow webserver in the background

@@ -38,5 +38,6 @@ with DAG(
             Mount(source="/home/airflow/.aws", target="/root/.aws", type="bind", read_only=True)
         ],
         mount_tmp_dir=False,  # Optional: Prevent mounting /tmp
-        execution_timeout=timedelta(minutes=30),
+        user='0',  # Run as root user
+        privileged=True,  # Enable privileged mode
     )

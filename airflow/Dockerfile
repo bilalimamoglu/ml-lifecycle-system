@@ -1,4 +1,4 @@
-# Use the official Airflow image as the base
+# Use the specified Airflow base image
 FROM apache/airflow:2.10.2-python3.11
 
 # Switch to root to install system dependencies
@@ -13,14 +13,18 @@ RUN apt-get update && \
 # Accept the Docker group GID as a build argument, default to 999 if not provided
 ARG DOCKER_GID=999
 
-# Create the docker group with the specified GID
-RUN groupadd -g ${DOCKER_GID} docker || true
-
-# Add the 'airflow' user to the docker group
-RUN usermod -aG docker airflow
+# Create the docker group with the specified GID if it doesn't already exist
+RUN if ! getent group docker; then \
+        groupadd -g ${DOCKER_GID} docker; \
+    fi && \
+    usermod -aG docker airflow
 
 # Ensure the Airflow user owns the home directory
-RUN chown -R airflow:airflow /home/airflow || true
+RUN if [ "$DOCKER_GID" -ne 0 ]; then \
+        chown -R airflow:docker /home/airflow || true; \
+    else \
+        chown -R airflow:root /home/airflow || true; \
+    fi
 
 # Copy the entrypoint script and give execution permissions
 COPY entrypoint.sh /entrypoint.sh
