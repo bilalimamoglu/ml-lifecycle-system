@@ -1,3 +1,4 @@
+from PIL.ImageOps import contain
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.dates import days_ago
@@ -26,9 +27,9 @@ with DAG(
     train_model = DockerOperator(
         task_id='train_model',
         image='ml-lifecycle-training:latest',  # Ensure this matches your training image
+        container_name='training',
         api_version='auto',
         auto_remove='success',
-        #command=["python", "model_training.py"],
         docker_url="unix://var/run/docker.sock",  # Default Docker URL
         network_mode="ml-lifecycle-system_default",  # Specify the correct network
         environment={
