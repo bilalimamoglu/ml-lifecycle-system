@@ -30,14 +30,30 @@ def evaluate_model():
 
     # Configure MLflow
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000"))
+    client = mlflow.tracking.MlflowClient()
 
-    # Load the latest model
-    current_run = mlflow.active_run()
-    if current_run is None:
-        print("No active MLflow run found. Cannot load model.")
+    # Find the latest run
+    experiment_name = 'RandomForest_Iris'
+    experiment = client.get_experiment_by_name(experiment_name)
+    if experiment is None:
+        print(f"No experiment named '{experiment_name}' found.")
         return
 
-    model_uri = f"runs:/{current_run.info.run_id}/model"
+    runs = client.search_runs(experiment_ids=experiment.experiment_id,
+                              order_by=["attributes.start_time DESC"],
+                              max_results=1)
+
+    if not runs:
+        print("No runs found for the experiment.")
+        return
+
+    latest_run = runs[0]
+    run_id = latest_run.info.run_id
+
+    # Use the fixed artifact path
+    model_uri = f"runs:/{run_id}/model"
+
+    # Load the model
     model = mlflow.sklearn.load_model(model_uri)
 
     # Evaluate model

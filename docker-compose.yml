@@ -42,7 +42,7 @@ services:
     volumes:
       - ./orchestration/dags:/opt/airflow/dags
       - ./orchestration/data:/opt/airflow/data
-      - $HOME/.aws:/opt/airflow/.aws:ro  # Mount AWS credentials
+      - $HOME/.aws:/home/airflow/.aws:ro  # Mount AWS credentials
     ports:
       - "8080:8080"
     command: /bin/bash -c "/opt/airflow/setup_aws_env.sh && /entrypoint.sh"

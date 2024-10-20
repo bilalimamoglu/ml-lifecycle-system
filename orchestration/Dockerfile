@@ -10,7 +10,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy the setup_aws_env.sh script into the container
-COPY ../setup_aws_env.sh /opt/airflow/setup_aws_env.sh
+COPY setup_aws_env.sh /opt/airflow/setup_aws_env.sh
 
 # Make the script executable
 RUN chmod +x /opt/airflow/setup_aws_env.sh

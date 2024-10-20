@@ -8,11 +8,14 @@ import mlflow.sklearn
 from mlflow.models.signature import infer_signature
 import random
 import boto3
+import datetime
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 def train_model():
     # Configure Boto3 for AWS S3 Access
     try:
+        print(f"AWS_SHARED_CREDENTIALS_FILE: {os.getenv('AWS_SHARED_CREDENTIALS_FILE')}")
+        print(f"AWS_CONFIG_FILE: {os.getenv('AWS_CONFIG_FILE')}")
         session = boto3.Session()
         credentials = session.get_credentials()
         current_credentials = credentials.get_frozen_credentials()
@@ -39,6 +42,9 @@ def train_model():
         'random_state': 42,
     }
 
+    # Generate a timestamp
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
     # Configure MLflow
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000"))
     mlflow.set_experiment('RandomForest_Iris')
@@ -51,5 +57,6 @@ def train_model():
         # Log parameters and model
         mlflow.log_params(hyperparameters)
         signature = infer_signature(X_train_scaled, model.predict(X_train_scaled))
-        mlflow.sklearn.log_model(model, "model", signature=signature)
-        print("Model training completed and logged to MLflow.")
+        artifact_path = "model"
+        mlflow.sklearn.log_model(model, artifact_path, signature=signature)
+        print(f"Model training completed and logged to MLflow with artifact path: {artifact_path}")
