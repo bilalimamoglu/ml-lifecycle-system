@@ -36,15 +36,16 @@ services:
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
       AIRFLOW__CORE__HOSTNAME_CALLABLE: 'socket.gethostname'
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SHARED_CREDENTIALS_FILE: /opt/airflow/.aws/credentials
+      AWS_CONFIG_FILE: /opt/airflow/.aws/config
       MLFLOW_TRACKING_URI: 'http://mlflow-server:5000'
     volumes:
       - ./orchestration/dags:/opt/airflow/dags
       - ./orchestration/data:/opt/airflow/data
-      - $HOME/.aws:/home/airflow/.aws:ro  # Mount AWS credentials
+      - $HOME/.aws:/opt/airflow/.aws:ro  # Mount AWS credentials
     ports:
       - "8080:8080"
+    command: /bin/bash -c "/opt/airflow/setup_aws_env.sh && /entrypoint.sh"
 
 volumes:
   postgres_data:

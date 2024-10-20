@@ -1,4 +1,3 @@
-# /opt/airflow/dags/python_scripts/data_generation.py
 import pandas as pd
 from sklearn.datasets import load_iris
 from pathlib import Path
