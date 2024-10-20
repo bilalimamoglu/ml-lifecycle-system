@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 import mlflow
 import mlflow.sklearn
-from mlflow.models.signature import infer_signature
 import random
 import boto3
 import datetime
@@ -49,14 +48,13 @@ def train_model():
     mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000"))
     mlflow.set_experiment('RandomForest_Iris')
 
+    # Enable automatic logging with mlflow.sklearn.autolog()
+    mlflow.sklearn.autolog()
+
     with mlflow.start_run():
         # Train model
         model = RandomForestClassifier(**hyperparameters)
         model.fit(X_train_scaled, y_train)
 
-        # Log parameters and model
-        mlflow.log_params(hyperparameters)
-        signature = infer_signature(X_train_scaled, model.predict(X_train_scaled))
-        artifact_path = "model"
-        mlflow.sklearn.log_model(model, artifact_path, signature=signature)
-        print(f"Model training completed and logged to MLflow with artifact path: {artifact_path}")
+        # MLflow will automatically log parameters, metrics, and the model
+        print(f"Model training completed and automatically logged to MLflow.")

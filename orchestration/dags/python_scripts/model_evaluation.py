@@ -1,3 +1,5 @@
+# evaluate_model.py
+
 import os
 import pandas as pd
 from sklearn.metrics import accuracy_score
@@ -59,5 +61,9 @@ def evaluate_model():
     # Evaluate model
     y_pred = model.predict(X_test_scaled)
     accuracy = accuracy_score(y_test, y_pred)
-    mlflow.log_metric('accuracy', accuracy)
     print(f"Model evaluation completed with accuracy: {accuracy}")
+
+    # Log the accuracy metric to the latest run
+    with mlflow.start_run(run_id=run_id, nested=True):
+        mlflow.log_metric('accuracy', accuracy)
+        print(f"Logged 'accuracy' metric to run_id: {run_id}")
