@@ -7,7 +7,7 @@ import mlflow
 import mlflow.sklearn
 
 def evaluate_model():
-    data_dir = Path('/opt/orchestration/data')
+    data_dir = Path('/opt/airflow/data')
     X_test = pd.read_csv(data_dir / 'X_test.csv')
     y_test = pd.read_csv(data_dir / 'y_test.csv').values.ravel()
 

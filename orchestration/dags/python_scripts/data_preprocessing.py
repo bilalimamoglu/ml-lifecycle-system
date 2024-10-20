@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def preprocess_data():
-    data_dir = Path('/opt/orchestration/data')
+    data_dir = Path('/opt/airflow/data')
     data_file = data_dir / 'iris.csv'
     df = pd.read_csv(data_file)
 

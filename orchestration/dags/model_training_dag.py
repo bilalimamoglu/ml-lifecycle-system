@@ -3,11 +3,12 @@ from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 from datetime import timedelta
 
-# Import functions from python_scripts
-from orchestration.python_scripts.data_generation import generate_data
-from orchestration.python_scripts.data_preprocessing import preprocess_data
-from orchestration.python_scripts.model_training import train_model
-from orchestration.python_scripts.model_evaluation import evaluate_model
+# Update the import path to match the new location
+from python_scripts.data_generation import generate_data
+from python_scripts.data_preprocessing import preprocess_data
+from python_scripts.model_training import train_model
+from python_scripts.model_evaluation import evaluate_model
+
 
 default_args = {
     'owner': 'data_engineer',

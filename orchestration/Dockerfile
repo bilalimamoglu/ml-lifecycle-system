@@ -9,6 +9,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends git && \
     rm -rf /var/lib/apt/lists/*
 
+# Copy the entrypoint script to the correct location
+COPY entrypoint.sh /entrypoint.sh
+
+# Set permissions
+RUN chmod +x /entrypoint.sh
+
 # Switch back to airflow user
 USER airflow
 
@@ -16,9 +22,12 @@ USER airflow
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy DAGs and scripts
+# Add the python_scripts directory to PYTHONPATH
+ENV PYTHONPATH="${PYTHONPATH}:/opt/airflow/python_scripts"
+
+# Copy DAGs and scripts to appropriate locations
+COPY dags/python_scripts/ /opt/airflow/python_scripts/
 COPY dags/ /opt/airflow/dags/
-COPY python_scripts/ /opt/airflow/python_scripts/
 
 # Create data directory
 RUN mkdir -p /opt/airflow/data

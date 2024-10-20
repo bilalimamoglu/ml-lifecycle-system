@@ -9,7 +9,7 @@ from mlflow.models.signature import infer_signature
 import random
 
 def train_model():
-    data_dir = Path('/opt/orchestration/data')
+    data_dir = Path('/opt/airflow/data')
     X_train = pd.read_csv(data_dir / 'X_train.csv')
     y_train = pd.read_csv(data_dir / 'y_train.csv').values.ravel()
 
