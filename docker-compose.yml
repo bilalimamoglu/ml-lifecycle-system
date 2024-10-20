@@ -65,6 +65,25 @@ services:
     build: ./monitoring/exporter
     ports:
       - "8000:8000"
+    volumes:
+      - $HOME/.aws:/root/.aws:ro  # Adjust as needed
+    depends_on:
+      - mlflow-server
+
+  alertmanager:
+    image: prom/alertmanager
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9093:9093"
+    environment:
+      - ALERTMANAGER_EMAIL_USER=alertmanager@example.com
+      - ALERTMANAGER_EMAIL_PASSWORD=yourpassword
+    depends_on:
+      - prometheus
+
+
+
 
 volumes:
   postgres_data:

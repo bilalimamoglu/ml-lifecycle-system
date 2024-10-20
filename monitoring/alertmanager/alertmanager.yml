@@ -1,0 +1,20 @@
+# monitoring/alertmanager/alertmanager.yml
+
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: 'email-alert'
+  group_wait: 10s
+  group_interval: 10m
+  repeat_interval: 1h
+
+receivers:
+  - name: 'email-alert'
+    email_configs:
+      - to: 'your_email@example.com'
+        from: 'alertmanager@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: '${ALERTMANAGER_EMAIL_USER}'
+        auth_password: '${ALERTMANAGER_EMAIL_PASSWORD}'
+

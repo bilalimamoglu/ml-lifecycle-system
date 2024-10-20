@@ -1,14 +1,18 @@
 # monitoring/exporter/exporter.py
+
 from prometheus_client import start_http_server, Gauge
 import time
 import mlflow
-
+import os
 
 def collect_metrics():
     # Define Prometheus Gauges for each metric
     model_accuracy = Gauge('model_accuracy', 'Accuracy of the ML model during evaluation')
     training_accuracy = Gauge('training_accuracy_score', 'Accuracy of the ML model during training')
     model_last_updated = Gauge('model_last_updated', 'Timestamp of the last model update in Unix time')
+
+    # Set the MLflow tracking URI
+    mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI", "http://mlflow-server:5000"))
 
     # Start the Prometheus HTTP server on port 8000
     start_http_server(8000)
@@ -50,7 +54,6 @@ def collect_metrics():
 
         # Wait for 60 seconds before the next update
         time.sleep(60)
-
 
 if __name__ == '__main__':
     collect_metrics()

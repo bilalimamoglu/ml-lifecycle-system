@@ -1,12 +1,9 @@
-# evaluate_model.py
-
 import os
 import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 import mlflow
-import mlflow.sklearn
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
@@ -63,7 +60,9 @@ def evaluate_model():
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Model evaluation completed with accuracy: {accuracy}")
 
-    # Log the accuracy metric to the latest run
-    with mlflow.start_run(run_id=run_id, nested=True):
-        mlflow.log_metric('accuracy', accuracy)
+    # Log the accuracy metric to the latest run using MLflow client
+    try:
+        client.log_metric(run_id, 'accuracy', accuracy)
         print(f"Logged 'accuracy' metric to run_id: {run_id}")
+    except Exception as e:
+        print(f"Error logging metric to MLflow: {e}")
