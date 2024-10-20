@@ -14,8 +14,5 @@ airflow users create \
     --email example@example.com \
     || echo "Admin user already exists."
 
-# Start the Airflow webserver in the background
-airflow webserver --port 8080 &
-
-# Start the Airflow scheduler
-exec airflow scheduler
+# Start the Airflow webserver and scheduler
+exec airflow webserver & airflow scheduler

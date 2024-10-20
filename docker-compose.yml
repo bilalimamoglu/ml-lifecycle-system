@@ -9,8 +9,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  mlflow-server:
+    build: ./mlflow
+    image: mlflow-server
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: https://s3.amazonaws.com
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      MLFLOW_BACKEND_STORE_URI: sqlite:///mlflow.db
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: s3://mlflow-artifacts-bilalimg/
+    volumes:
+      - mlflow_db:/mlflow_db
+
   airflow:
-    build: ./airflow
+    build: ./orchestration
     restart: always
     depends_on:
       - postgres
@@ -20,43 +34,16 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
-      DOCKER_GID: ${DOCKER_GID}  # Pass the Docker GID from .env
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      MLFLOW_TRACKING_URI: 'http://mlflow-server:5000'
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./orchestration/dags:/opt/airflow/dags
+      - ./orchestration/python_scripts:/opt/airflow/python_scripts
+      - ./orchestration/data:/opt/airflow/data
+      - $HOME/.aws:/home/airflow/.aws:ro  # Mount AWS credentials
     ports:
       - "8080:8080"
-    command: >
-      bash -c "airflow db upgrade && 
-               airflow users create --username myuser --password mypassword --firstname Firstname --lastname Lastname --role Admin --email example@example.com && 
-               airflow scheduler & airflow webserver"
-
-  mlflow-server:
-    image: mlflow-server
-    build:
-      context: ./mlflow
-    ports:
-      - "5000:5000"
-    environment:
-      - MLFLOW_S3_ENDPOINT_URL=https://s3.amazonaws.com
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow.db
-      - MLFLOW_DEFAULT_ARTIFACT_ROOT=s3://mlflow-artifacts-bilalimg/
-    volumes:
-      - mlflow_db:/mlflow_db
-
-  ml-lifecycle-training:
-    build:
-      context: ./training
-      dockerfile: Dockerfile
-    image: ml-lifecycle-training
-    environment:
-      - MLFLOW_TRACKING_URI=http://mlflow-server:5000
-    depends_on:
-      - mlflow-server
-    volumes:
-      - $HOME/.aws:/root/.aws:ro  # Mount the .aws directory to /root/.aws
 
 volumes:
   postgres_data:
