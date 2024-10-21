@@ -1,0 +1,5 @@
+alerting:
+  enabled: true
+
+alerting_rules:
+  path: /var/lib/grafana/alerting

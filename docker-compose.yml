@@ -55,11 +55,19 @@ services:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:latest
     ports:
       - "3000:3000"
     volumes:
-      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/alerting:/var/lib/grafana/alerting
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    depends_on:
+      - prometheus
 
   exporter:
     build: ./monitoring/exporter
@@ -69,21 +77,6 @@ services:
       - $HOME/.aws:/root/.aws:ro  # Adjust as needed
     depends_on:
       - mlflow-server
-
-  alertmanager:
-    image: prom/alertmanager
-    volumes:
-      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    ports:
-      - "9093:9093"
-    environment:
-      - ALERTMANAGER_EMAIL_USER=alertmanager@example.com
-      - ALERTMANAGER_EMAIL_PASSWORD=yourpassword
-    depends_on:
-      - prometheus
-
-
-
 
 volumes:
   postgres_data:

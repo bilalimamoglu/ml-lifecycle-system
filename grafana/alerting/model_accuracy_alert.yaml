@@ -1,0 +1,27 @@
+name: Low Model Accuracy Alert
+type: alert
+rule:
+  conditions:
+    - evaluator:
+        params:
+          - 0.99
+        type: lt
+      operator:
+        type: and
+      query:
+        params:
+          - A
+          - "5m"
+          - now
+      reducer:
+        params: []
+        type: avg
+      type: query
+  datasource: Prometheus
+  expr: model_accuracy
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    summary: "Model accuracy below threshold"
+    description: "Model accuracy is below 80%."
