@@ -3,34 +3,34 @@ apiVersion: 1
 groups:
   - name: "Model Accuracy Alerts"
     interval: "1m"
-    folder: "ML Alerts"  # Folder for the group
-    uid: "model-accuracy-alerts-uid"  # Unique identifier for the group
+    folder: "ML Alerts"
+    uid: "model-accuracy-alerts-uid"
     rules:
       - alert: "LowModelAccuracy"
-        uid: "low-model-accuracy-alert-uid"  # Unique identifier for the alert
+        uid: "low-model-accuracy-alert-uid"
         title: "Low Model Accuracy Alert"
-        condition: "C"  # Specifies a condition for this rule
+        condition: "A"  # Correctly refers to condition A
         data:
           - refId: "A"
             queryType: "promql"
             relativeTimeRange:
-              from: 3600 # 10 minutes ago
+              from: 3600  # 1 hour ago
               to: 0  # Present time
-            datasourceUid: "PBFA97CFB590B2093"  # Ensure this is the correct UID of your Prometheus data source
+            datasourceUid: "PBFA97CFB590B2093"  # Your Prometheus data source UID
             model:
-              expr: "model_accuracy"
+              expr: "avg_over_time(model_accuracy[5m])"  # Reduce to a single value using avg_over_time
         conditions:
           - evaluator:
-              type: lt  # less than
+              type: lt  # Less than
               params:
-                - 0.99  # The threshold for model_accuracy
+                - 0.99  # Alert if model_accuracy is less than 99%
             operator:
-              type: and
+              type: or
             reducer:
-              type: avg  # Reduce the query result to a single value
+              type: last  # Get the last reduced value to ensure a scalar output
             query:
               params:
-                - "A"
+                - "A"  # Refers to query A's reduced value
                 - "5m"
                 - "now"
         for: "5m"
