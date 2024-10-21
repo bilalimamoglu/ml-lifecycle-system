@@ -1,0 +1,7 @@
+notifiers:
+  - name: Email Notifications
+    type: email
+    uid: email-notifier
+    org_id: 1
+    settings:
+      addresses: "bilalimamogluu@gmail.com"

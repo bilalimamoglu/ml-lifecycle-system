@@ -24,4 +24,4 @@ rule:
     severity: warning
   annotations:
     summary: "Model accuracy below threshold"
-    description: "Model accuracy is below 80%."
+    description: "Model accuracy is below 99%."

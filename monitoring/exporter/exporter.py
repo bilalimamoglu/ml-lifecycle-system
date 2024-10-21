@@ -52,8 +52,8 @@ def collect_metrics():
         except Exception as e:
             print(f"Error collecting metrics: {e}")
 
-        # Wait for 60 seconds before the next update
-        time.sleep(60)
+        # Wait for 15 seconds before the next update
+        time.sleep(15)
 
 if __name__ == '__main__':
     collect_metrics()
