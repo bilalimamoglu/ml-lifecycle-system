@@ -1,5 +1,12 @@
+# grafana/provisioning/alerting/alerting.yaml
+apiVersion: 1
+
+# Enable Grafana's Unified Alerting
 alerting:
   enabled: true
 
-alerting_rules:
-  path: /var/lib/grafana/alerting
+# Configure where Grafana should look for alerting resources
+provisioning:
+  alerting_rules_path: /etc/grafana/provisioning/alerting/alert_rules.yml
+  contact_points_path: /etc/grafana/provisioning/alerting/contact_points.yml
+  notification_policies_path: /etc/grafana/provisioning/alerting/notification_policies.yml

@@ -1,0 +1,6 @@
+notifiers:
+  - name: "MailHog Email Notifications"
+    type: "email"
+    uid: "mailhog-email-notifier"
+    settings:
+      addresses: "test@example.com"

@@ -1,0 +1,43 @@
+apiVersion: 1
+
+groups:
+  - name: "Model Accuracy Alerts"
+    interval: "1m"
+    folder: "ML Alerts"  # Folder for the group
+    uid: "model-accuracy-alerts-uid"  # Unique identifier for the group
+    rules:
+      - alert: "LowModelAccuracy"
+        uid: "low-model-accuracy-alert-uid"  # Unique identifier for the alert
+        title: "Low Model Accuracy Alert"
+        condition: "C"  # Specifies a condition for this rule
+        data:
+          - refId: "A"
+            queryType: "promql"
+            relativeTimeRange:
+              from: 3600 # 10 minutes ago
+              to: 0  # Present time
+            datasourceUid: "PBFA97CFB590B2093"  # Ensure this is the correct UID of your Prometheus data source
+            model:
+              expr: "model_accuracy"
+        conditions:
+          - evaluator:
+              type: lt  # less than
+              params:
+                - 0.99  # The threshold for model_accuracy
+            operator:
+              type: and
+            reducer:
+              type: avg  # Reduce the query result to a single value
+            query:
+              params:
+                - "A"
+                - "5m"
+                - "now"
+        for: "5m"
+        labels:
+          severity: "warning"
+        annotations:
+          summary: "Model accuracy below threshold"
+          description: "Model accuracy is below the acceptable threshold of 99%."
+        notify:
+          - name: "MailHog Email Notifications"

@@ -1,7 +1,7 @@
 notifiers:
-  - name: Email Notifications
+  - uid: email-notifier
+    name: Email Notifications
     type: email
-    uid: email-notifier
-    org_id: 1
+    isDefault: true
     settings:
-      addresses: "bilalimamogluu@gmail.com"
+      addresses: "example@email.com"

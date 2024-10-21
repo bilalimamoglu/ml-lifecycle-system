@@ -1,0 +1,9 @@
+apiVersion: 1
+
+notificationPolicies:
+  - name: "Default Notification Policy"
+    default: true
+    receivers:
+      - name: "MailHog Email Notifications"
+    group_by: ['alertname']
+    continue: false
