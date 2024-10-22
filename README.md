@@ -63,6 +63,8 @@ The system integrates several components to achieve complete lifecycle managemen
 - **Flask API**: Serves the latest model for predictions via a RESTful interface.
 - **Docker and Docker Compose**: Containerizes and orchestrates all services for consistent deployment.
 
+![Architecture Diagram](assets/diagram.jpg)
+
 ### Component Interaction Flow
 
 1. **Model Training**:
