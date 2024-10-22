@@ -146,7 +146,7 @@ To run this project, you will need AWS credentials with the necessary permission
 
 **For Reviewers**:
 
-- AWS credentials and configurations are provided separately.
+- AWS credentials and configurations are inside of the aws_credentials.zip file. This file is password protected. The password is the surname of the HR officer I spoke with, written in lower case letters.
 - Please contact the project author at [imamogluubilal@gmail.com](mailto:imamogluubilal@gmail.com) to obtain the necessary credentials.
 - **Important**: Handle these credentials securely and do not expose them publicly.
 
@@ -508,25 +508,6 @@ To ensure that the system works as expected, please perform the following test c
 
 ---
 
-## Conclusion
-
-This project demonstrates a complete Machine Learning Model Lifecycle Management System, integrating various technologies to handle model training, storage, monitoring, alerting, and serving. By leveraging AWS services, containerization, and orchestration tools, we achieve a scalable and maintainable architecture.
-
-**Key Takeaways**:
-
-- **Secure and Scalable Storage**: Using AWS S3 and IAM roles ensures data security and scalability.
-- **Automated Training and Deployment**: Airflow automates model training with retries and SLAs.
-- **Real-time Monitoring and Alerting**: Prometheus and Grafana provide insights into model performance and system health.
-- **Continuous Model Serving**: The API ensures that the latest model is always available for predictions.
-
-**Future Improvements**:
-
-- Implementing CI/CD pipelines for automated deployments.
-- Enhancing security by integrating AWS KMS for key management.
-- Scaling the API using a production-ready server like Gunicorn or uWSGI.
-
----
-
 ## Contact Information
 
 For any questions or further assistance, please contact:
@@ -541,7 +522,7 @@ For any questions or further assistance, please contact:
 
 - **AWS Resources**:
 
-  - All necessary AWS resources, including IAM users, policies, and S3 buckets, have already been set up.
+  - All necessary AWS resources, including IAM users, policies, and S3 bucket, have already been set up.
   - You do not need to create or modify any AWS configurations.
 
 - **Credentials**:
