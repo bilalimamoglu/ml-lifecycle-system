@@ -147,7 +147,7 @@ To run this project, you will need AWS credentials with the necessary permission
 **For Reviewers**:
 
 - AWS credentials and configurations are inside of the aws_credentials.zip file. This file is password protected. The password is the surname of the HR officer I spoke with, written in lower case letters.
-- Please contact the project author at [imamogluubilal@gmail.com](mailto:imamogluubilal@gmail.com) to obtain the necessary credentials.
+- Please contact the project author at [imamogluubilal@gmail.com](mailto:imamogluubilal@gmail.com) to directly obtain the necessary credentials.
 - **Important**: Handle these credentials securely and do not expose them publicly.
 
 ---
@@ -174,6 +174,10 @@ To run this project, you will need AWS credentials with the necessary permission
      Replace `path_to_provided_credentials` and `path_to_provided_config` with the actual paths to the files.
 
    - Alternatively, run the provided script to set up AWS environment variables:
+   
+     ```sh
+     aws configure
+     ```
 
      ```sh
      ./setup_aws_env.sh
@@ -262,40 +266,15 @@ To run this project, you will need AWS credentials with the necessary permission
 
 - **IAM Policy (`ml-lifecycle-policy`)**:
   - **Permissions**:
-    - `S3`: Full access to the specified S3 bucket for reading and writing artifacts.
+    - `S3`: Access to the specified S3 bucket for reading and writing artifacts.
   - **Note**: All necessary IAM users, roles, and policies have already been set up.
 
-#### Reasoning Behind Choices
+#### Reasoning Behind IAM Choices
 
 - **AWS S3**: Provides scalable, secure, and durable storage for artifacts. It integrates seamlessly with MLflow for artifact storage.
 - **IAM Users and Roles**: Using IAM users and groups with appropriate policies ensures secure and organized access management, adhering to the principle of least privilege.
 
-### MLflow Integration
-
-#### Configuring MLflow with S3
-
-1. **MLflow Tracking Server**:
-   - Located in the `mlflow/` directory.
-   - **Dockerfile**:
-
-     ```dockerfile
-     FROM python:3.11.9-slim
-     RUN pip install mlflow boto3 psycopg2-binary
-     EXPOSE 5000
-     CMD ["mlflow", "server", "--host", "0.0.0.0"]
-     ```
-
-2. **Environment Variables**:
-   - `MLFLOW_S3_ENDPOINT_URL`: `https://s3.amazonaws.com`
-   - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`: Retrieved from AWS Secrets Manager or environment variables.
-   - `MLFLOW_BACKEND_STORE_URI`: `postgresql+psycopg2://mlflow:mlflow@postgres:5432/mlflow`
-   - `MLFLOW_DEFAULT_ARTIFACT_ROOT`: `s3://mlflow-artifacts-bilalimg/`
-
-3. **Docker Compose Configuration**:
-   - Service Name: `mlflow-server`
-   - Depends on `postgres` service for backend storage.
-
-#### Reasoning Behind Choices
+#### Reasoning Behind MLFlow Choices
 
 - **MLflow**: Provides a robust framework for tracking experiments, versioning models, and storing artifacts.
 - **Integration with S3**: Allows for scalable and durable storage of models and artifacts.
@@ -331,7 +310,7 @@ To run this project, you will need AWS credentials with the necessary permission
   - Retries set to `1` with a delay of `5` minutes.
   - **Why**: Ensures robustness in case of transient failures.
 
-#### Reasoning Behind Choices
+#### Reasoning Behind Airflow Choices
 
 - **Apache Airflow**: Provides a powerful platform for orchestrating complex workflows with scheduling, retries, and SLA management.
 - **PythonOperator**: Allows for flexibility in defining tasks using Python functions.
@@ -341,28 +320,12 @@ To run this project, you will need AWS credentials with the necessary permission
 #### Prometheus Configuration
 
 - **Configuration File**: `monitoring/prometheus/prometheus.yml`
-- **Scrape Configs**:
-
-  ```yaml
-  scrape_configs:
-    - job_name: 'exporter'
-      static_configs:
-        - targets: ['exporter:8000']
-  ```
 
 - **Exporter**:
 
   - Custom exporter located in `monitoring/exporter/`.
   - Exposes MLflow metrics such as `model_accuracy` and `training_accuracy_score`.
   - **Dockerfile**:
-
-    ```dockerfile
-    FROM python:3.11.9-slim
-    RUN pip install prometheus_client mlflow
-    COPY exporter.py /exporter.py
-    EXPOSE 8000
-    CMD ["python", "/exporter.py"]
-    ```
 
 #### Grafana Dashboard and Alerts
 
@@ -414,28 +377,6 @@ To run this project, you will need AWS credentials with the necessary permission
   - Provides a `/predict` endpoint that accepts input features in JSON format.
   - Returns predictions based on the latest model.
 
-- **Dockerfile**:
-
-  ```dockerfile
-  FROM python:3.11-slim
-  WORKDIR /app
-  COPY requirements.txt .
-  RUN pip install --no-cache-dir -r requirements.txt
-  COPY app.py .
-  ENV MLFLOW_TRACKING_URI=http://mlflow-server:5000
-  CMD ["python", "app.py"]
-  ```
-
-- **Requirements**:
-
-  ```txt
-  flask
-  mlflow
-  pandas
-  scikit-learn
-  threading
-  ```
-
 #### Model Update Mechanism
 
 - **Model Update Daemon**:
@@ -448,7 +389,7 @@ To run this project, you will need AWS credentials with the necessary permission
   - Chose simplicity over setting up MLflow Model Registry.
   - Directly querying the latest run ensures the most recent model is used without additional configuration.
 
-#### Reasoning Behind Choices
+#### Reasoning Behind Flask Choices
 
 - **Flask**: Lightweight and easy to set up for building a RESTful API.
 - **Automatic Model Updates**: Ensures that the API always serves the latest model without manual intervention.
