@@ -131,14 +131,17 @@ The system integrates several components to achieve complete lifecycle managemen
 
 ---
 
+**Notes For Reviewers**:
+I didn't always follow best practices in my project due to time constraints and simplicity. I will attempt to explain my decisions in certain areas and what would have been preferable in ideal circumstances. 
+
 ## Environment Setup
 
 ### Prerequisites
 
 - **Operating System**: Linux-based OS is recommended.
-- **Docker**: Ensure Docker is installed and running.
+- **Docker**: Ensure Docker is installed and running (My Macbook M2 was running Docker-Desktop).
 - **Docker Compose**: Version compatible with Docker.
-- **AWS Account**: Access to AWS services with necessary permissions.
+- **AWS Credentials**: Access to AWS services (For this project, S3) with necessary permissions.
 
 ### AWS Credentials
 
@@ -146,7 +149,7 @@ To run this project, you will need AWS credentials with the necessary permission
 
 **For Reviewers**:
 
-- AWS credentials and configurations are inside of the aws_credentials.zip file. This file is password protected. The password is the surname of the HR officer I spoke with, written in lower case letters.
+- The aws_credentials.zip file contains the AWS configurations and credentials. This file requires a password to access. The password is the surname of the HR officer I spoke with, written in lower case letters.
 - Please contact the project author at [imamogluubilal@gmail.com](mailto:imamogluubilal@gmail.com) to directly obtain the necessary credentials.
 - **Important**: Handle these credentials securely and do not expose them publicly.
 
@@ -250,14 +253,13 @@ To run this project, you will need AWS credentials with the necessary permission
 - **Purpose**: Stores MLflow artifacts such as models, metrics, and parameters.
 - **Configuration**:
   - The bucket is configured to allow access only from authorized IAM users and services.
-  - Versioning is enabled to keep track of different model versions.
   - Access policies are set to ensure that only specified IAM roles and users can access the bucket.
 
 #### IAM Users and Roles
 
 - **IAM Users**:
   - `cli-user`: Used for AWS CLI interactions, such as uploading artifacts to S3.
-  - `reviewer-user`: Provides read-only access for reviewers to inspect the project.
+  - `reviewer-user`: Provides access for reviewers to inspect the project.
 
 - **IAM Group**:
   - **Name**: `ml-lifecycle`
@@ -267,18 +269,18 @@ To run this project, you will need AWS credentials with the necessary permission
 - **IAM Policy (`ml-lifecycle-policy`)**:
   - **Permissions**:
     - `S3`: Access to the specified S3 bucket for reading and writing artifacts.
-  - **Note**: All necessary IAM users, roles, and policies have already been set up.
 
 #### Reasoning Behind IAM Choices
 
 - **AWS S3**: Provides scalable, secure, and durable storage for artifacts. It integrates seamlessly with MLflow for artifact storage.
 - **IAM Users and Roles**: Using IAM users and groups with appropriate policies ensures secure and organized access management, adhering to the principle of least privilege.
 
-#### Reasoning Behind MLFlow Choices
+#### Reasoning Behind MLFlow Choice
 
 - **MLflow**: Provides a robust framework for tracking experiments, versioning models, and storing artifacts.
 - **Integration with S3**: Allows for scalable and durable storage of models and artifacts.
 - **PostgreSQL Backend**: Serves as a reliable backend for MLflow's tracking data.
+- **Simplicity** To make it less complicated overall, I merely used MLFlow Experiment Tracking in this instance.
 
 ### Airflow Setup
 
@@ -289,31 +291,29 @@ To run this project, you will need AWS credentials with the necessary permission
 
   1. **generate_data**:
      - Generates the Iris dataset and saves it to `data/iris.csv`.
-     - **Why**: Ensures fresh data is used for each training cycle.
+     - **Why**: Guarantees that each training cycle (in the real world) uses new data.
 
   2. **preprocess_data**:
      - Splits data into training and testing sets.
-     - **Why**: Preprocessing is essential for model performance.
 
   3. **train_model**:
      - Trains a Random Forest model with random hyperparameters.
      - Logs parameters and metrics to MLflow.
-     - **Why**: Introduces variability and tests the system's ability to handle different model versions.
 
   4. **evaluate_model**:
      - Evaluates the trained model on the test set.
      - Logs accuracy to MLflow.
-     - **Why**: Monitoring model performance over time is crucial.
 
 - **Retries and SLAs**:
   - Configured in `default_args` of the DAG.
   - Retries set to `1` with a delay of `5` minutes.
-  - **Why**: Ensures robustness in case of transient failures.
 
 #### Reasoning Behind Airflow Choices
 
 - **Apache Airflow**: Provides a powerful platform for orchestrating complex workflows with scheduling, retries, and SLA management.
 - **PythonOperator**: Allows for flexibility in defining tasks using Python functions.
+- The orchestration folder contains DAGS. This is a bad habit in the actual world. Because you have to pause the entire Airflow system for a while in order to deploy each time you alter the DAGS.
+- Additionally, to keep things separate, modular and more professional, I would prefer DockerOperator or KubernetesPodOperator over PythonOperator if I had more time.
 
 ### Monitoring and Alerting
 
@@ -361,11 +361,12 @@ To run this project, you will need AWS credentials with the necessary permission
 
   - Alerts are sent via email using **MailHog**, a local SMTP server for testing.
 
-#### Reasoning Behind Choices
+#### Reasoning Behind Monitoring Choices
 
 - **Prometheus**: Ideal for collecting and storing time-series data, enabling real-time monitoring.
 - **Grafana**: Provides a user-friendly interface for visualizing metrics and setting up complex alerting rules.
-- **MailHog**: Allows for testing email notifications without sending actual emails.
+- **MailHog**: Enables email notification testing without actually sending emails. I used it for the first time and found it to be useful for testing.
+- I would have like to use AWS SNS if I had more time, but time was not a resource I had.
 
 ### Model Serving via API
 
@@ -388,12 +389,11 @@ To run this project, you will need AWS credentials with the necessary permission
 
   - Chose simplicity over setting up MLflow Model Registry.
   - Directly querying the latest run ensures the most recent model is used without additional configuration.
+  - In the real world settings, different models would produce different results over varying periods of time. For instance, I would choose the model that performed the best during the previous month.
 
 #### Reasoning Behind Flask Choices
 
 - **Flask**: Lightweight and easy to set up for building a RESTful API.
-- **Automatic Model Updates**: Ensures that the API always serves the latest model without manual intervention.
-- **Simplified Approach**: Avoids additional complexity by not using the MLflow Model Registry.
 
 ---
 
@@ -464,7 +464,7 @@ For any questions or further assistance, please contact:
 - **AWS Resources**:
 
   - All necessary AWS resources, including IAM users, policies, and S3 bucket, have already been set up.
-  - You do not need to create or modify any AWS configurations.
+  - You do not need to create or modify any AWS configurations. Just use reviewer cli.
 
 - **Credentials**:
 
