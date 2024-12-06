@@ -147,9 +147,6 @@ I didn't always follow best practices in my project due to time constraints and 
 
 To run this project, you will need AWS credentials with the necessary permissions to access S3 and other AWS services used in this project.
 
-**For Reviewers**:
-
-- The aws_credentials.zip file contains the AWS configurations and credentials. This file requires a password to access. The password is the surname of the HR officer I spoke with, written in lower case letters.
 - Please contact the project author at [imamogluubilal@gmail.com](mailto:imamogluubilal@gmail.com) to directly obtain the necessary credentials.
 - **Important**: Handle these credentials securely and do not expose them publicly.
 
@@ -366,7 +363,6 @@ To run this project, you will need AWS credentials with the necessary permission
 - **Prometheus**: Ideal for collecting and storing time-series data, enabling real-time monitoring.
 - **Grafana**: Provides a user-friendly interface for visualizing metrics and setting up complex alerting rules.
 - **MailHog**: Enables email notification testing without actually sending emails. I used it for the first time and found it to be useful for testing.
-- I would have like to use AWS SNS if I had more time, but time was not a resource I had.
 
 ### Model Serving via API
 
